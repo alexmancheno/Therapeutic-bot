@@ -43,8 +43,10 @@ app.use(bodyParser.json());
 var conversation = new Conversation({
   // If unspecified here, the CONVERSATION_USERNAME and CONVERSATION_PASSWORD env properties will be checked
   // After that, the SDK will fall back to the bluemix-provided VCAP_SERVICES environment property
-  username: 'c9636a47-9dcd-4e92-ad6a-5d5ae53284fd',
-  password: 'RMHcbsZopEDm',
+  username: 'cf4df870-6515-4577-8e10-c090e6a35a84',
+  password: 'FUuUuiZ1mFHH',
+  // username: 'c9636a47-9dcd-4e92-ad6a-5d5ae53284fd',
+  // password: 'RMHcbsZopEDm',
   url: 'https://gateway.watsonplatform.net/conversation/api',
   version_date: '2016-10-21',
   version: 'v1'
@@ -72,17 +74,15 @@ app.post('/api/message', function(req, res) {
 
   };
 
-  toneAnalyzer.tone(payload.input.text, function(err, data) {
-      console.log("payload.input: " + payload.input);
-      console.log("input.text: " + payload.input.text);
-    if (err) {
-      console.log("Error: " +  err);
-      return err;
-    } else {
-      console.log("Success: " + data);
-      return res.json(data);
-    }
+
+    toneAnalyzer.tone({ text: payload.input.text},
+    function(err, tone) {
+      if (err)
+        console.log(err);
+      else
+        console.log(JSON.stringify(tone, null, 2));
   });
+
 
   //Send the input to the conversation service
   conversation.message(payload, function(err, data) {
