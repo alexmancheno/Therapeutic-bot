@@ -19,8 +19,21 @@
 var express = require('express'); // app server
 var bodyParser = require('body-parser'); // parser for post requests
 var Conversation = require('watson-developer-cloud/conversation/v1'); // watson sdk
+var ToneAnalyzerV3 = require('watson-developer-cloud/tone-analyzer/v3');
 
 var app = express();
+
+var toneAnalyzer = new ToneAnalyzerV3({
+  // If unspecified here, the TONE_ANALYZER_USERNAME and TONE_ANALYZER_PASSWORD environment properties will be checked
+  // After that, the SDK will fall back to the bluemix-provided VCAP_SERVICES environment property
+  username: '1886438a-6b69-4fbf-b22f-9d48ef541adc',
+  password: 'ukxIrJNiG8RH',
+
+  //This authentication definitely works:
+  //username: '7c6c4fa9-d4f1-4441-ade1-9757dab7ec76',
+  //password: '5WuKxzPcHxSo',
+  version_date: '2016-05-19'
+});
 
 // Bootstrap application settings
 app.use(express.static('./public')); // load UI from public folder
@@ -30,13 +43,18 @@ app.use(bodyParser.json());
 var conversation = new Conversation({
   // If unspecified here, the CONVERSATION_USERNAME and CONVERSATION_PASSWORD env properties will be checked
   // After that, the SDK will fall back to the bluemix-provided VCAP_SERVICES environment property
-  // username: '<username>',
-  // password: '<password>',
+  username: 'c9636a47-9dcd-4e92-ad6a-5d5ae53284fd',
+  password: 'RMHcbsZopEDm',
   url: 'https://gateway.watsonplatform.net/conversation/api',
   version_date: '2016-10-21',
   version: 'v1'
 });
 
+/**
+Currently working on this function. We have to modify the toneAnalyzer.tone() method
+so it works for us. The problem is that it expects an object inside the parameter that
+has a '.text' property.
+*/
 // Endpoint to be call from the client side
 app.post('/api/message', function(req, res) {
   var workspace = process.env.WORKSPACE_ID || '<workspace-id>';
@@ -51,9 +69,22 @@ app.post('/api/message', function(req, res) {
     workspace_id: workspace,
     context: req.body.context || {},
     input: req.body.input || {}
+
   };
 
-  // Send the input to the conversation service
+  toneAnalyzer.tone(payload.input.text, function(err, data) {
+      console.log("payload.input: " + payload.input);
+      console.log("input.text: " + payload.input.text);
+    if (err) {
+      console.log("Error: " +  err);
+      return err;
+    } else {
+      console.log("Success: " + data);
+      return res.json(data);
+    }
+  });
+
+  //Send the input to the conversation service
   conversation.message(payload, function(err, data) {
     if (err) {
       return res.status(err.code || 500).json(err);
