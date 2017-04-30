@@ -73,7 +73,8 @@ app.post('/api/message', function(req, res) {
     input: req.body.input || {}
 
   };
-
+    console.log("context: " + payload.context.output);
+    console.log("input: " + payload.input.text);
 
     toneAnalyzer.tone({ text: payload.input.text},
     function(err, tone) {
